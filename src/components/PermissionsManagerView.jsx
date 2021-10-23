@@ -64,6 +64,15 @@ export default class PermissionsManagerView extends Component {
       }
       return true;
     };
+    /*
+     * TODO: Should also traverse the tree on node movements, as currently it's possible to
+     * create a node branch A->B and then create a circular dependency by creating a new top
+     * level node B and making the first branch its child (so it becomes B->A->B).
+     * Not sure what behavior to add to it:
+     *  *) Automatically delete the conflicting child (as the permission is already provided
+     *     in the parent). Would have to auto-adopt the children of the deleted node.
+     *  *) Block creating such relationships. Might be a lot less user-friendly though ;).
+     */
     return (
       <DndProvider backend={HTML5Backend}>
         <div style={{ display: "flex" }}>
