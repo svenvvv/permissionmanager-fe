@@ -3,6 +3,7 @@ import { Component } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { SortableTreeWithoutDndContext as SortableTree } from "@nosferatu500/react-sortable-tree";
+import axios from "axios";
 
 import BasePermissionDragNode, { nodeType } from "./BasePermissionDragNode";
 
@@ -12,20 +13,29 @@ export default class PermissionsManagerView extends Component {
 
     this.state = {
       treeData: [
-        { id: 3, title: "Mama Rabbit" },
-        { id: 4, title: "Papa Rabbit" },
+        { id: 100, title: "Mama Rabbit" },
+        { id: 101, title: "Papa Rabbit" },
       ],
-      permissions: [
-        {
-          id: 1,
-          title: "Create users",
-          subtitle: "Allows the user to create new user accounts",
-        },
-        { id: 2, title: "Delete users" },
-        { id: 5, title: "Modify users" },
-        { id: 6, title: "Block users" },
-      ],
+      permissions: [],
     };
+  }
+
+  componentDidMount() {
+    axios
+      .get("/api/permissions/available")
+      .then(({ data: permissions }) => {
+        const permissionsObj = permissions.reduce(
+          (prev, curr) => Object.assign(prev, { [curr.id]: curr }),
+          {}
+        );
+        this.setState({ permissions: permissionsObj });
+      })
+      .catch((err) => {
+        console.log("TODO handle");
+      });
+    axios.get("/api/permissions/nodes").then(({ data }) => {
+      console.log(data);
+    });
   }
 
   render() {
@@ -77,7 +87,7 @@ export default class PermissionsManagerView extends Component {
       <DndProvider backend={HTML5Backend}>
         <div style={{ display: "flex" }}>
           <div style={{ flex: 1 }}>
-            {this.state.permissions.map((p) => {
+            {Object.entries(this.state.permissions).map(([_, p]) => {
               return <BasePermissionDragNode key={p.title} node={p} />;
             })}
           </div>
