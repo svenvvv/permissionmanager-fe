@@ -2,7 +2,10 @@ import "@nosferatu500/react-sortable-tree/style.css";
 import { Component } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { SortableTreeWithoutDndContext as SortableTree } from "@nosferatu500/react-sortable-tree";
+import {
+  SortableTreeWithoutDndContext as SortableTree,
+  getTreeFromFlatData,
+} from "@nosferatu500/react-sortable-tree";
 import axios from "axios";
 
 import BasePermissionDragNode, { nodeType } from "./BasePermissionDragNode";
@@ -12,10 +15,7 @@ export default class PermissionsManagerView extends Component {
     super(props);
 
     this.state = {
-      treeData: [
-        { id: 100, title: "Mama Rabbit" },
-        { id: 101, title: "Papa Rabbit" },
-      ],
+      treeData: [],
       permissions: [],
     };
   }
@@ -30,20 +30,38 @@ export default class PermissionsManagerView extends Component {
         );
         this.setState({ permissions: permissionsObj });
       })
+      .then(() => axios.get("/api/permissions/nodes"))
+      .then(({ data }) => {
+        const pickPermissions = ({ title, subtitle }) => ({
+          title,
+          subtitle,
+        });
+        this.setState({
+          treeData: getTreeFromFlatData({
+            flatData: data.map((node) => ({
+              ...node,
+              ...pickPermissions(this.state.permissions[node.permissionId]),
+            })),
+            getKey: (node) => node.id,
+            getParentKey: (node) => {
+              // getParentKey() may not return undefined so coalesce the undefined into a null
+              return node.parent?.id ?? null;
+            },
+            rootKey: null,
+          }),
+        });
+      })
       .catch((err) => {
         console.log("TODO handle");
       });
-    axios.get("/api/permissions/nodes").then(({ data }) => {
-      console.log(data);
-    });
   }
 
   render() {
-    const isDuplicate = (id, parent) => {
+    const isDuplicate = (permissionId, parent) => {
       if (!parent) {
         return false;
       }
-      if (parent.id === id) {
+      if (parent.permissionId === permissionId) {
         return true;
       }
 
@@ -59,17 +77,18 @@ export default class PermissionsManagerView extends Component {
       let dupecount = 0;
       for (let i = 0; i < parent.children.length; ++i) {
         const child = parent.children[i];
-        if (isDuplicate(id, child)) {
+        if (isDuplicate(permissionId, child)) {
           dupecount += 1;
         }
         if (dupecount > 1) {
+          console.log(dupecount, permissionId, parent);
           return true;
         }
       }
       return false;
     };
     const canDrop = ({ node, nextParent /* prevPath, nextPath */ }) => {
-      if (isDuplicate(node.id, nextParent)) {
+      if (isDuplicate(node.permissionId, nextParent)) {
         return false;
       }
       return true;
