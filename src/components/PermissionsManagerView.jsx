@@ -68,27 +68,18 @@ export default class PermissionsManagerView extends Component {
       if (!parent.children) {
         return false;
       }
-      /*
-       * The unplaced node is listed in the children list as soon as
-       * the user is hovering over the spot.
-       * To account for that we'll need to count the dupes,
-       * as 1 dupe is allowed due to the above behavior.
-       */
-      let dupecount = 0;
+
       for (let i = 0; i < parent.children.length; ++i) {
         const child = parent.children[i];
         if (isDuplicate(permissionId, child)) {
-          dupecount += 1;
-        }
-        if (dupecount > 1) {
-          console.log(dupecount, permissionId, parent);
           return true;
         }
       }
       return false;
     };
     const canDrop = ({ node, nextParent /* prevPath, nextPath */ }) => {
-      if (isDuplicate(node.permissionId, nextParent)) {
+      // Note that the node is without a permissionId value here as we've yet to hit the BE
+      if (isDuplicate(node.id, nextParent)) {
         return false;
       }
       return true;
@@ -115,6 +106,10 @@ export default class PermissionsManagerView extends Component {
               treeData={this.state.treeData}
               canDrop={canDrop}
               onChange={(treeData) => this.setState({ treeData })}
+              onMoveNode={({ treeData, node, parent }) => {
+                console.log(treeData, node, parent);
+                node.permissionId = node.id;
+              }}
               dndType={nodeType}
               maxDepth={3}
             />
