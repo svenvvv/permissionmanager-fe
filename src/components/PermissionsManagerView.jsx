@@ -11,18 +11,57 @@ export default class PermissionsManagerView extends Component {
     super(props);
 
     this.state = {
-      treeData: [{ title: "Mama Rabbit" }, { title: "Papa Rabbit" }],
+      treeData: [
+        { id: 3, title: "Mama Rabbit" },
+        { id: 4, title: "Papa Rabbit" },
+      ],
       permissions: [
         {
+          id: 1,
           title: "Create users",
           subtitle: "Allows the user to create new user accounts",
         },
-        { title: "Delete users" },
+        { id: 2, title: "Delete users" },
       ],
     };
   }
 
   render() {
+    const isDuplicate = (id, parent) => {
+      if (!parent) {
+        return false;
+      }
+      if (parent.id === id) {
+        return true;
+      }
+
+      if (!parent.children) {
+        return false;
+      }
+      /*
+       * The unplaced node is listed in the children list as soon as
+       * the user is hovering over the spot.
+       * To account for that we'll need to count the dupes,
+       * as 1 dupe is allowed due to the above behavior.
+       */
+      let dupecount = 0;
+      for (let i = 0; i < parent.children.length; ++i) {
+        const child = parent.children[i];
+        if (isDuplicate(id, child)) {
+          dupecount += 1;
+        }
+        if (dupecount > 1) {
+          return true;
+        }
+      }
+      return false;
+    };
+    const canDrop = ({ node, nextParent, prevPath, nextPath }) => {
+      if (nextPath.length > 3 || isDuplicate(node.id, nextParent)) {
+        return false;
+      }
+      return true;
+    };
     return (
       <DndProvider backend={HTML5Backend}>
         <div style={{ display: "flex" }}>
@@ -34,6 +73,7 @@ export default class PermissionsManagerView extends Component {
           <div style={{ flex: 3, height: "100vh" }}>
             <SortableTree
               treeData={this.state.treeData}
+              canDrop={canDrop}
               onChange={(treeData) => this.setState({ treeData })}
               dndType={nodeType}
             />
