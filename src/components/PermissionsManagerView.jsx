@@ -84,6 +84,19 @@ export default class PermissionsManagerView extends Component {
       }
       return true;
     };
+
+    const onMoveNode = ({ node, nextParentNode }) => {
+      const parent = nextParentNode && { id: nextParentNode.id };
+      axios
+        .post("/api/permissions/nodes", {
+          permissionId: node.id,
+          parent,
+        })
+        .then(({ data }) => {
+          node.permissionId = node.id;
+          node.id = data.id;
+        });
+    };
     /*
      * TODO: Should also traverse the tree on node movements, as currently it's possible to
      * create a node branch A->B and then create a circular dependency by creating a new top
@@ -92,6 +105,10 @@ export default class PermissionsManagerView extends Component {
      *  *) Automatically delete the conflicting child (as the permission is already provided
      *     in the parent). Would have to auto-adopt the children of the deleted node.
      *  *) Block creating such relationships. Might be a lot less user-friendly though ;).
+     *  *) Do nothing. After a bit of thinking about it, then that might be the most user-friendly
+     *     of them all, given that reordering might introduce circular deps, but moving the
+     *     parents and (duped) siblings out from under the parent and having missing
+     *     siblings might be the most confusing thing to do.
      */
     return (
       <DndProvider backend={HTML5Backend}>
@@ -106,10 +123,7 @@ export default class PermissionsManagerView extends Component {
               treeData={this.state.treeData}
               canDrop={canDrop}
               onChange={(treeData) => this.setState({ treeData })}
-              onMoveNode={({ treeData, node, parent }) => {
-                console.log(treeData, node, parent);
-                node.permissionId = node.id;
-              }}
+              onMoveNode={onMoveNode}
               dndType={nodeType}
               maxDepth={3}
             />
