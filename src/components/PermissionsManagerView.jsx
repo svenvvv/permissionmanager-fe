@@ -22,6 +22,8 @@ export default class PermissionsManagerView extends Component {
           subtitle: "Allows the user to create new user accounts",
         },
         { id: 2, title: "Delete users" },
+        { id: 5, title: "Modify users" },
+        { id: 6, title: "Block users" },
       ],
     };
   }
@@ -56,8 +58,8 @@ export default class PermissionsManagerView extends Component {
       }
       return false;
     };
-    const canDrop = ({ node, nextParent, prevPath, nextPath }) => {
-      if (nextPath.length > 3 || isDuplicate(node.id, nextParent)) {
+    const canDrop = ({ node, nextParent /* prevPath, nextPath */ }) => {
+      if (isDuplicate(node.id, nextParent)) {
         return false;
       }
       return true;
@@ -76,6 +78,7 @@ export default class PermissionsManagerView extends Component {
               canDrop={canDrop}
               onChange={(treeData) => this.setState({ treeData })}
               dndType={nodeType}
+              maxDepth={3}
             />
           </div>
         </div>
