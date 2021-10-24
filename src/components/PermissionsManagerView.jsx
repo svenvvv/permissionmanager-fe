@@ -8,6 +8,7 @@ import {
   removeNodeAtPath,
 } from "@nosferatu500/react-sortable-tree";
 import axios from "axios";
+import Modal from "react-modal";
 
 import BasePermissionDragNode, { nodeType } from "./BasePermissionDragNode";
 
@@ -18,6 +19,8 @@ export default class PermissionsManagerView extends Component {
     this.state = {
       treeData: [],
       permissions: [],
+      editMode: false,
+      createModalIsOpen: false,
     };
   }
 
@@ -120,17 +123,20 @@ export default class PermissionsManagerView extends Component {
     return {
       buttons: [
         <button
-          onClick={() =>
-            axios.delete(`/api/permissions/nodes/${node.id}`).then(() => {
-              this.setState((state) => ({
-                treeData: removeNodeAtPath({
-                  treeData: state.treeData,
-                  path,
-                  getNodeKey: this.getNodeKey,
-                }),
-              }));
-            })
-          }
+          className="buttonCancel"
+          onClick={() => {
+            if (window.confirm(`Permanently delete node "${node.title}" and all child nodes?`)) {
+              axios.delete(`/api/permissions/nodes/${node.id}`).then(() => {
+                this.setState((state) => ({
+                  treeData: removeNodeAtPath({
+                    treeData: state.treeData,
+                    path,
+                    getNodeKey: this.getNodeKey,
+                  }),
+                }));
+              });
+            }
+          }}
         >
           Delete
         </button>,
@@ -157,31 +163,98 @@ export default class PermissionsManagerView extends Component {
      *     siblings might be the most confusing thing to do.
      */
     return (
-      <DndProvider backend={HTML5Backend}>
-        <div className="areaContainer">
-          <div className="area rst__Node">
-            <div className="areaTitle">Available permissions</div>
-            <div className="areaAvailablePermissions">
-              {Object.entries(this.state.permissions).map(([_, p]) => {
-                return <BasePermissionDragNode key={p.title} node={p} />;
-              })}
+      <div>
+        <Modal
+          isOpen={this.state.createModalIsOpen}
+          onRequestClose={() => {
+            this.setState({ createModalIsOpen: false });
+          }}
+          contentLabel="Create permission modal"
+          style={{
+            content: {
+              top: "50%",
+              left: "50%",
+              right: "auto",
+              bottom: "auto",
+              marginRight: "-50%",
+              transform: "translate(-50%, -50%)",
+            },
+          }}
+        >
+          <b>Create new permission</b>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              this.setState({ createModalIsOpen: false });
+            }}
+          >
+            <ul className="formWrapper">
+              <div className="formRow">
+                <label htmlFor="title">Title</label>
+                <input id="title" minLength={3} type="text" required />
+              </div>
+              <div className="formRow">
+                <label htmlFor="subtitle">Subtitle</label>
+                <input id="subtitle" type="text" placeholder="Optional" />
+              </div>
+              <div className="formRow">
+                <button type="submit" className="buttonConfirm">
+                  Create
+                </button>
+                <button
+                  className="buttonCancel"
+                  onClick={() => {
+                    this.setState({ createModalIsOpen: false });
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </ul>
+          </form>
+        </Modal>
+        <DndProvider backend={HTML5Backend}>
+          <div className="areaContainer">
+            <div className="area rst__Node">
+              <div className="areaTitle">Available permissions</div>
+              <div className="areaAvailablePermissions">
+                {Object.entries(this.state.permissions).map(([_, p]) => {
+                  return <BasePermissionDragNode key={p.title} node={p} />;
+                })}
+              </div>
+              <div className="permissionEditBox">
+                <button
+                  onClick={() => {
+                    this.setState({ createModalIsOpen: true });
+                  }}
+                >
+                  Create new
+                </button>
+                <button
+                  onClick={() => {
+                    this.setState({ editMode: !this.state.editMode });
+                  }}
+                >
+                  {!this.state.editMode ? "Edit mode" : "Exit edit mode"}
+                </button>
+              </div>
+            </div>
+            <div className="area areaPermissionTree">
+              <div className="areaTitle">Permission tree</div>
+              <SortableTree
+                canDrop={this.nodeCanDrop.bind(this)}
+                dndType={nodeType}
+                maxDepth={3}
+                onChange={(treeData) => this.setState({ treeData })}
+                onMoveNode={this.onMoveNode.bind(this)}
+                generateNodeProps={this.generateNodeProps.bind(this)}
+                getNodeKey={this.getNodeKey}
+                treeData={this.state.treeData}
+              />
             </div>
           </div>
-          <div className="area areaPermissionTree">
-            <div className="areaTitle">Permission tree</div>
-            <SortableTree
-              canDrop={this.nodeCanDrop.bind(this)}
-              dndType={nodeType}
-              maxDepth={3}
-              onChange={(treeData) => this.setState({ treeData })}
-              onMoveNode={this.onMoveNode.bind(this)}
-              generateNodeProps={this.generateNodeProps.bind(this)}
-              getNodeKey={this.getNodeKey}
-              treeData={this.state.treeData}
-            />
-          </div>
-        </div>
-      </DndProvider>
+        </DndProvider>
+      </div>
     );
   }
 }

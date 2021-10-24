@@ -43,10 +43,60 @@
   margin-bottom: 4pt;
 }
 
+button {
+  height: 32px;
+  background-color: white;
+  border: solid 2px #bbb;
+  border-radius: 6px;
+}
+
+.permissionEditBox > button {
+  width: 50%;
+  margin-top: 2pt;
+}
+
+button:hover {
+  background-color: #bbb;
+  border: solid 2px rgb(151, 151, 151);
+}
+
+.buttonConfirm:hover {
+  background-color: rgb(155, 192, 166);
+}
+
+.buttonCancel:hover {
+  background-color: rgb(222 169 169);
+}
+
 .rst__tree {
   border-radius: 15px;
   padding: 5px 5px 5px 5px;
   border: solid 2px #b6b6b6;
+}
+
+.formWrapper {
+  padding: 8pt;
+  margin: 0;
+}
+
+.formRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2pt;
+}
+
+.formRow > label {
+  flex: 1;
+  margin-right: 4pt;
+}
+
+.formRow > input {
+  flex: 2;
+}
+
+.formRow > button {
+  flex: 1;
+  margin: 8pt 2pt 0 2pt;
 }
 
 @media only screen and (max-width: 640px) {
