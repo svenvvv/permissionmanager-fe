@@ -20,16 +20,22 @@ const nodeCollect = (connect /* , monitor */) => ({
 
 const permissionNodeBaseComponent = (props) => {
   const { connectDragSource, node } = props;
+  /*
+   * The nice way to get constant styling would be to either patch react-sortable-tree
+   * to export it's node renderer or to use a custom node renderer that exports.
+   * But good enough for a proof-of-concept to keep similar styling ;).
+   */
+  const height = "32px";
   return connectDragSource(
-    <div
-      style={{
-        display: "inline-block",
-        padding: "3px 5px",
-        background: "blue",
-        color: "white",
-      }}
-    >
-      {node.title}
+    <div className="permissionNode" style={{ height }}>
+      <div className="rst__row">
+        <div className="rst__moveHandle" style={{ width: height }}></div>
+        <div className="rst__rowContents">
+          <div className="rst__rowLabel">
+            <span className="rst__rowTitle">{node.title}</span>
+          </div>
+        </div>
+      </div>
     </div>,
     { dropEffect: "copy" }
   );

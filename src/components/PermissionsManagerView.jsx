@@ -159,7 +159,7 @@ export default class PermissionsManagerView extends Component {
     return (
       <DndProvider backend={HTML5Backend}>
         <div style={{ display: "flex" }}>
-          <div style={{ flex: 1 }}>
+          <div className="rst__Node" style={{ flex: 1 }}>
             {Object.entries(this.state.permissions).map(([_, p]) => {
               return <BasePermissionDragNode key={p.title} node={p} />;
             })}
