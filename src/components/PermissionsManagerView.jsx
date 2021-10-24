@@ -56,61 +56,66 @@ export default class PermissionsManagerView extends Component {
       });
   }
 
-  render() {
-    const isDuplicate = (permissionId, parent) => {
-      if (!parent) {
-        return false;
-      }
-      if (parent.permissionId === permissionId) {
+  nodeIsDuplicate(permissionId, parent) {
+    if (!parent) {
+      return false;
+    }
+    if (parent.permissionId === permissionId) {
+      return true;
+    }
+
+    if (!parent.children) {
+      return false;
+    }
+
+    for (let i = 0; i < parent.children.length; ++i) {
+      const child = parent.children[i];
+      if (this.nodeIsDuplicate(permissionId, child)) {
         return true;
       }
+    }
+    return false;
+  }
 
-      if (!parent.children) {
-        return false;
-      }
-
-      for (let i = 0; i < parent.children.length; ++i) {
-        const child = parent.children[i];
-        if (isDuplicate(permissionId, child)) {
-          return true;
-        }
-      }
+  nodeCanDrop({ node, nextParent }) {
+    // Note that the node is without a permissionId value here as we've yet to hit the BE
+    if (this.nodeIsDuplicate(node.id, nextParent)) {
       return false;
-    };
-    const canDrop = ({ node, nextParent /* prevPath, nextPath */ }) => {
-      // Note that the node is without a permissionId value here as we've yet to hit the BE
-      if (isDuplicate(node.id, nextParent)) {
-        return false;
-      }
-      return true;
-    };
+    }
+    return true;
+  }
 
-    const onMoveNode = ({ node, nextParentNode }) => {
-      const parent = nextParentNode && { id: nextParentNode.id };
-      /*
-       * If the node does not have the property permissionId, then it's a newly created
-       * node and we should let the BE know that we want a new node.
-       * If it has the property, then let's tell BE that we want to move a node.
-       */
-      if (node.hasOwnProperty("permissionId")) {
-        axios
-          .put(`/api/permissions/nodes/${node.id}/parent`, parent ?? { id: null })
-          .catch((err) => {
-            console.error(`TODO handle: ${err}`);
-          });
-      } else {
-        axios
-          .post("/api/permissions/nodes", {
-            permissionId: node.id,
-            parent,
-          })
-          .then(({ data }) => {
-            // Switch out id and permissionId
-            node.permissionId = node.id;
-            node.id = data.id;
-          });
-      }
-    };
+  onMoveNode({ node, nextParentNode }) {
+    const parent = nextParentNode && { id: nextParentNode.id };
+    /*
+     * If the node does not have the property permissionId, then it's a newly created
+     * node and we should let the BE know that we want a new node.
+     * If it has the property, then let's tell BE that we want to move a node.
+     */
+    if (node.hasOwnProperty("permissionId")) {
+      axios.put(`/api/permissions/nodes/${node.id}/parent`, parent ?? { id: null }).catch((err) => {
+        // TODO: should revert the movement back on failure
+        console.error(`TODO handle: ${err}`);
+      });
+    } else {
+      axios
+        .post("/api/permissions/nodes", {
+          permissionId: node.id,
+          parent,
+        })
+        .then(({ data }) => {
+          // Switch out id and permissionId
+          node.permissionId = node.id;
+          node.id = data.id;
+        })
+        .catch((err) => {
+          // TODO: should delete the (only on FE) added node
+          console.error(`TODO handle: ${err}`);
+        });
+    }
+  }
+
+  render() {
     /*
      * TODO: Should also traverse the tree on node movements, as currently it's possible to
      * create a node branch A->B and then create a circular dependency by creating a new top
@@ -134,12 +139,12 @@ export default class PermissionsManagerView extends Component {
           </div>
           <div style={{ flex: 3, height: "100vh" }}>
             <SortableTree
-              treeData={this.state.treeData}
-              canDrop={canDrop}
-              onChange={(treeData) => this.setState({ treeData })}
-              onMoveNode={onMoveNode}
+              canDrop={this.nodeCanDrop.bind(this)}
               dndType={nodeType}
               maxDepth={3}
+              onChange={(treeData) => this.setState({ treeData })}
+              onMoveNode={this.onMoveNode.bind(this)}
+              treeData={this.state.treeData}
             />
           </div>
         </div>
