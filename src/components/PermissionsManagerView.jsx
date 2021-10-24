@@ -158,13 +158,17 @@ export default class PermissionsManagerView extends Component {
      */
     return (
       <DndProvider backend={HTML5Backend}>
-        <div style={{ display: "flex" }}>
-          <div className="rst__Node" style={{ flex: 1 }}>
-            {Object.entries(this.state.permissions).map(([_, p]) => {
-              return <BasePermissionDragNode key={p.title} node={p} />;
-            })}
+        <div className="areaContainer">
+          <div className="area rst__Node">
+            <div className="areaTitle">Available permissions</div>
+            <div className="areaAvailablePermissions">
+              {Object.entries(this.state.permissions).map(([_, p]) => {
+                return <BasePermissionDragNode key={p.title} node={p} />;
+              })}
+            </div>
           </div>
-          <div style={{ flex: 3, height: "100vh" }}>
+          <div className="area areaPermissionTree">
+            <div className="areaTitle">Permission tree</div>
             <SortableTree
               canDrop={this.nodeCanDrop.bind(this)}
               dndType={nodeType}

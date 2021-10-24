@@ -1,7 +1,72 @@
 .App {
+  color: #2b3333;
   text-align: center;
+  height: 100vh;
+}
+
+.title {
+  font-size: 22pt;
+  padding-bottom: 1pt;
+  padding-top: 4pt;
+}
+
+.subtitle {
+  padding-top: 1pt;
+  margin: 2pt 0 0 0;
+  padding-bottom: 8pt;
 }
 
 .permissionNode {
   margin: 0.5vh 0 0.5vh 0;
+}
+
+.areaContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.area {
+  padding: 0 8pt 0 8pt;
+}
+
+.areaAvailablePermissions {
+  flex: 1 1 0%;
+}
+
+.areaPermissionTree {
+  flex: 3 1 0%;
+}
+
+.areaTitle {
+  text-align: left;
+  font-size: 14pt;
+  margin-bottom: 4pt;
+}
+
+.rst__tree {
+  border-radius: 15px;
+  padding: 5px 5px 5px 5px;
+  border: solid 2px #b6b6b6;
+}
+
+@media only screen and (max-width: 640px) {
+  .hideOnMobile {
+    display: none;
+  }
+
+  .permissionNode > .rst__row > .rst__rowContents {
+    min-width: 50px;
+  }
+
+  .areaContainer {
+    flex-direction: column-reverse;
+  }
+
+  .areaAvailablePermissions {
+    overflow: auto;
+    max-height: 25vh;
+  }
+  .areaPermissionTree > .rst__tree {
+    height: 55vh !important;
+  }
 }
