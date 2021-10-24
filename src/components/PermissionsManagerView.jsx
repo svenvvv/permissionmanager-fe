@@ -87,15 +87,29 @@ export default class PermissionsManagerView extends Component {
 
     const onMoveNode = ({ node, nextParentNode }) => {
       const parent = nextParentNode && { id: nextParentNode.id };
-      axios
-        .post("/api/permissions/nodes", {
-          permissionId: node.id,
-          parent,
-        })
-        .then(({ data }) => {
-          node.permissionId = node.id;
-          node.id = data.id;
-        });
+      /*
+       * If the node does not have the property permissionId, then it's a newly created
+       * node and we should let the BE know that we want a new node.
+       * If it has the property, then let's tell BE that we want to move a node.
+       */
+      if (node.hasOwnProperty("permissionId")) {
+        axios
+          .put(`/api/permissions/nodes/${node.id}/parent`, parent ?? { id: null })
+          .catch((err) => {
+            console.error(`TODO handle: ${err}`);
+          });
+      } else {
+        axios
+          .post("/api/permissions/nodes", {
+            permissionId: node.id,
+            parent,
+          })
+          .then(({ data }) => {
+            // Switch out id and permissionId
+            node.permissionId = node.id;
+            node.id = data.id;
+          });
+      }
     };
     /*
      * TODO: Should also traverse the tree on node movements, as currently it's possible to
