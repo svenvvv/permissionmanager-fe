@@ -5,6 +5,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   SortableTreeWithoutDndContext as SortableTree,
   getTreeFromFlatData,
+  removeNodeAtPath,
 } from "@nosferatu500/react-sortable-tree";
 import axios from "axios";
 
@@ -115,6 +116,32 @@ export default class PermissionsManagerView extends Component {
     }
   }
 
+  generateNodeProps({ node, path }) {
+    return {
+      buttons: [
+        <button
+          onClick={() =>
+            axios.delete(`/api/permissions/nodes/${node.id}`).then(() => {
+              this.setState((state) => ({
+                treeData: removeNodeAtPath({
+                  treeData: state.treeData,
+                  path,
+                  getNodeKey: this.getNodeKey,
+                }),
+              }));
+            })
+          }
+        >
+          Delete
+        </button>,
+      ],
+    };
+  }
+
+  getNodeKey({ node }) {
+    return node.id;
+  }
+
   render() {
     /*
      * TODO: Should also traverse the tree on node movements, as currently it's possible to
@@ -144,6 +171,8 @@ export default class PermissionsManagerView extends Component {
               maxDepth={3}
               onChange={(treeData) => this.setState({ treeData })}
               onMoveNode={this.onMoveNode.bind(this)}
+              generateNodeProps={this.generateNodeProps.bind(this)}
+              getNodeKey={this.getNodeKey}
               treeData={this.state.treeData}
             />
           </div>
