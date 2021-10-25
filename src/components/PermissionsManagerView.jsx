@@ -8,9 +8,9 @@ import {
   removeNodeAtPath,
 } from "@nosferatu500/react-sortable-tree";
 import axios from "axios";
-import Modal from "react-modal";
 
 import BasePermissionDragNode, { nodeType } from "./BasePermissionDragNode";
+import PermissionModal from "./PermissionModal";
 
 export default class PermissionsManagerView extends Component {
   constructor(props) {
@@ -21,6 +21,7 @@ export default class PermissionsManagerView extends Component {
       permissions: [],
       editMode: false,
       createModalIsOpen: false,
+      createModalError: null,
     };
   }
 
@@ -164,63 +165,30 @@ export default class PermissionsManagerView extends Component {
      */
     return (
       <div>
-        <Modal
+        <PermissionModal
+          title={"Create new permission"}
+          error={this.state.createModalError}
           isOpen={this.state.createModalIsOpen}
-          onRequestClose={() => {
+          onConfirm={({ title, subtitle }) => {
+            axios
+              .post("/api/permissions", { title, subtitle })
+              .then(({ data }) => {
+                this.setState({
+                  permissions: { ...this.state.permissions, [data.id]: data },
+                  createModalIsOpen: false,
+                });
+              })
+              .catch((e) => {
+                const msg = e.response ? e.response.data.error : "Unknown error";
+                this.setState({
+                  createModalError: msg,
+                });
+              });
+          }}
+          onCancel={() => {
             this.setState({ createModalIsOpen: false });
           }}
-          contentLabel="Create permission modal"
-          style={{
-            content: {
-              top: "50%",
-              left: "50%",
-              right: "auto",
-              bottom: "auto",
-              marginRight: "-50%",
-              transform: "translate(-50%, -50%)",
-            },
-          }}
-        >
-          <b>Create new permission</b>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const { title, subtitle } = e.target.elements;
-              axios
-                .post("/api/permissions", { title: title.value, subtitle: subtitle.value })
-                .then(({ data }) => {
-                  this.setState({
-                    permissions: { ...this.state.permissions, [data.id]: data },
-                    createModalIsOpen: false,
-                  });
-                });
-            }}
-          >
-            <ul className="formWrapper">
-              <div className="formRow">
-                <label htmlFor="title">Title</label>
-                <input id="title" name="title" minLength={3} type="text" required />
-              </div>
-              <div className="formRow">
-                <label htmlFor="subtitle">Subtitle</label>
-                <input id="subtitle" name="subtitle" type="text" placeholder="Optional" />
-              </div>
-              <div className="formRow">
-                <button type="submit" className="buttonConfirm">
-                  Create
-                </button>
-                <button
-                  className="buttonCancel"
-                  onClick={() => {
-                    this.setState({ createModalIsOpen: false });
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </ul>
-          </form>
-        </Modal>
+        />
         <DndProvider backend={HTML5Backend}>
           <div className="areaContainer">
             <div className="area rst__Node">
