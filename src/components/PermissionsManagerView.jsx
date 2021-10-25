@@ -6,6 +6,7 @@ import {
   SortableTreeWithoutDndContext as SortableTree,
   getTreeFromFlatData,
   removeNodeAtPath,
+  changeNodeAtPath,
 } from "@nosferatu500/react-sortable-tree";
 import axios from "axios";
 
@@ -90,7 +91,7 @@ export default class PermissionsManagerView extends Component {
     return true;
   }
 
-  onMoveNode({ node, nextParentNode }) {
+  onMoveNode({ node, nextParentNode, nextPath, treeData }) {
     const parent = nextParentNode && { id: nextParentNode.id };
     /*
      * If the node does not have the property permissionId, then it's a newly created
@@ -110,8 +111,22 @@ export default class PermissionsManagerView extends Component {
         })
         .then(({ data }) => {
           // Switch out id and permissionId
-          node.permissionId = node.id;
-          node.id = data.id;
+          const newNode = {
+            ...node,
+            permissionId: node.id,
+            id: data.id,
+          };
+          const newTree = changeNodeAtPath({
+            treeData,
+            path: nextPath,
+            newNode,
+            getNodeKey: this.getNodeKey,
+          });
+          if (newTree === "RESULT_MISS") {
+            // Not much we can do here, lets just hit the server up for the ID ;)
+            window.location.reload();
+          }
+          this.setState({ treeData: newTree });
         })
         .catch((err) => {
           // TODO: should delete the (only on FE) added node
