@@ -2,6 +2,7 @@ import Modal from "react-modal";
 
 const PermissionModal = (props) => (
   <Modal
+    appElement={document.getElementById("root")}
     isOpen={props.isOpen}
     onRequestClose={() => {
       props.onCancel();
