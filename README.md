@@ -1,37 +1,51 @@
 # Permission Manager Front-End
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Simple ReactJS-based front-end for a node-based permission manager.
 
-## Available Scripts
+## Setup
 
-In the project directory, you can run:
+### Install system dependencies
 
-### `npm start`
+Install NodeJS v16 from your package manager.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+You may have to install `npm` separately, depending on your distribution.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Install project dependencies
 
-### `npm test`
+Navigate to the project folder and execute:
+```
+npm install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Launch in dev-mode
 
-### `npm run build`
+Enter:
+```
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+There isn't much functionality without the back-end, so it's highly recommended
+to [set it up as well](https://github.com/svenvvv/permissionmanager-be).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Build the project for serving
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Execute:
+```
+npm run build
+```
 
-## Icon sources
+### Build and launch in Docker
 
-The favicon is composed of two public domain images from openclipart ---
-[the document icon](https://openclipart.org/detail/227926/document-icon)
-and
-[the approved stamp](https://openclipart.org/detail/668/red-approved-stamp).
+**It is highly recommended to use Docker Compose with the files provided in the
+[unified repository](https://github.com/svenvvv/permissionmanager) instead of
+this setup.**
+
+Set up Docker, navigate to the project directory and build the Docker image with the following command:
+```
+docker build -t permissionmanager-fe .
+```
+
+Afterwards the image can be launched using:
+```
+docker run -it -p 80:80 permissionmanager-fe
+```

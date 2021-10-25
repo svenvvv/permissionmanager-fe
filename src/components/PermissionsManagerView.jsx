@@ -214,13 +214,16 @@ export default class PermissionsManagerView extends Component {
                 })}
               </div>
               <div className="permissionEditBox">
+                {/* TODO remove width after edit mode */}
                 <button
+                  style={{ width: "100%" }}
                   onClick={() => {
                     this.setState({ createModalIsOpen: true });
                   }}
                 >
                   Create new
                 </button>
+                {/*
                 <button
                   onClick={() => {
                     this.setState({ editMode: !this.state.editMode });
@@ -228,6 +231,7 @@ export default class PermissionsManagerView extends Component {
                 >
                   {!this.state.editMode ? "Edit mode" : "Exit edit mode"}
                 </button>
+                */}
               </div>
             </div>
             <div className="area areaPermissionTree">
