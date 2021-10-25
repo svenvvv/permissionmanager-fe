@@ -185,17 +185,25 @@ export default class PermissionsManagerView extends Component {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              this.setState({ createModalIsOpen: false });
+              const { title, subtitle } = e.target.elements;
+              axios
+                .post("/api/permissions", { title: title.value, subtitle: subtitle.value })
+                .then(({ data }) => {
+                  this.setState({
+                    permissions: { ...this.state.permissions, [data.id]: data },
+                    createModalIsOpen: false,
+                  });
+                });
             }}
           >
             <ul className="formWrapper">
               <div className="formRow">
                 <label htmlFor="title">Title</label>
-                <input id="title" minLength={3} type="text" required />
+                <input id="title" name="title" minLength={3} type="text" required />
               </div>
               <div className="formRow">
                 <label htmlFor="subtitle">Subtitle</label>
-                <input id="subtitle" type="text" placeholder="Optional" />
+                <input id="subtitle" name="subtitle" type="text" placeholder="Optional" />
               </div>
               <div className="formRow">
                 <button type="submit" className="buttonConfirm">
