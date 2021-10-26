@@ -2,6 +2,7 @@ import "@nosferatu500/react-sortable-tree/style.css";
 import { Component } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { TouchBackend } from "react-dnd-touch-backend";
 import {
   SortableTreeWithoutDndContext as SortableTree,
   getTreeFromFlatData,
@@ -12,6 +13,11 @@ import axios from "axios";
 
 import BasePermissionDragNode, { nodeType } from "./BasePermissionDragNode";
 import PermissionModal from "./PermissionModal";
+
+const isTouch = !!("ontouchstart" in window || navigator.maxTouchPoints);
+const dndBackend = isTouch ? TouchBackend : HTML5Backend;
+
+console.log(`Using ${isTouch ? "touch" : "html5"} backend`);
 
 export default class PermissionsManagerView extends Component {
   constructor(props) {
@@ -204,7 +210,7 @@ export default class PermissionsManagerView extends Component {
             this.setState({ createModalIsOpen: false });
           }}
         />
-        <DndProvider backend={HTML5Backend}>
+        <DndProvider backend={dndBackend}>
           <div className="areaContainer">
             <div className="area rst__Node">
               <div className="areaTitle">Available permissions</div>

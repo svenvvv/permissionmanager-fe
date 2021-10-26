@@ -74,6 +74,17 @@ button:hover {
   border: solid 2px #b6b6b6;
 }
 
+.rst__moveHandle {
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+}
+
+.rst__rowLabel {
+  user-select: none;
+}
+
 .formWrapper {
   padding: 8pt;
   margin: 0;
